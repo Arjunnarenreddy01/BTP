@@ -1,0 +1,6 @@
+pandas
+numpy
+scikit-learn
+fastapi
+uvicorn
+openai  # optional, only if you want a real LLM agent
