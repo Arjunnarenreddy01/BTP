@@ -25,4 +25,12 @@ prof_feedback_df = pd.DataFrame(prof_feedback_dict).set_index("student_id")
 courses = ["Math", "Physics", "Chemistry", "History", "Art", "Music"]
 professors = ["Prof_A", "Prof_B", "Prof_C", "Prof_D"]
 
+# map professors to the courses they actually teach (for filtering later)
+prof_course_map = {
+    "Prof_A": ["Math", "Physics"],
+    "Prof_B": ["Chemistry", "History"],
+    "Prof_C": ["Math", "History", "Art"],
+    # Prof_D currently teaches no core courses in the dummy set
+}
+
 # You can also add textual descriptions or latent features here

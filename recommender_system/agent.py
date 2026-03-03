@@ -9,17 +9,22 @@ from models import (
 
 
 class RecommendationAgent:
-    """Simple agent that reasons step-by-step and calls the model tools."""
+    """Simple agent that reasons step-by-step and calls the model tools.
 
-    def __init__(self):
+    You can choose the embedding `method` ("svd" or "neural").
+    """
+
+    def __init__(self, method="neural", n_components=2):
+        self.method = method
+        self.n_components = n_components
         # precompute embeddings once
-        print("Agent: building course embeddings...")
+        print(f"Agent: building course embeddings using {method}...")
         self.student_course_emb, self.course_emb = build_course_embeddings(
-            grades_df
+            grades_df, n_components=n_components, method=method
         )
-        print("Agent: building professor embeddings...")
+        print(f"Agent: building professor embeddings using {method}...")
         self.student_prof_emb, self.prof_emb = build_prof_embeddings(
-            prof_feedback_df
+            prof_feedback_df, n_components=n_components, method=method
         )
 
     def recommend(self, student_id, top_k=5):
@@ -36,7 +41,9 @@ class RecommendationAgent:
         print("Action: computed professor scores")
 
         print("Thought: merging scores into combined ranking")
-        ranking = merge_scores(course_scores, prof_scores)
+        # if we know which professors teach which courses, only allow those
+        from data import prof_course_map
+        ranking = merge_scores(course_scores, prof_scores, course_prof_map=prof_course_map)
         print("Action: merged and sorted results")
 
         return ranking[:top_k]
