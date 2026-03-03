@@ -51,7 +51,7 @@ This small Python project illustrates how you can build a dual-layer recommendat
 ## Extending the Demo
 
 * Replace dummy data with a real database or CSVs
-* Swap out SVD for neural CF or embeddings
+* Swap out SVD for neural CF or embeddings (see `models.build_course_embeddings(method="neural")` or initialize `RecommendationAgent(method="neural")`). The requirement file now includes `torch` and training prints loss.
 * Add text-based feedback using an LLM embedding API
 * Replace `demo_agent_http` with a true LLM agent (e.g. using OpenAI/Gemini via the ReAct pattern)
 * Add natural‑language constraints (`"light workload"`, etc.) to the agent prompt

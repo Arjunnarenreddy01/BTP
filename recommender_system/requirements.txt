@@ -4,3 +4,5 @@ scikit-learn
 fastapi
 uvicorn
 openai  # optional, only if you want a real LLM agent
+# for neural collaborative filtering
+torch
