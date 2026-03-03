@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.decomposition import TruncatedSVD
 
 # optionally use PyTorch for neural collaborative filtering
 try:
@@ -46,15 +45,17 @@ def _train_neural_embeddings(mat, n_components=2, epochs=500, lr=0.01):
     return student_emb.detach().cpu().numpy(), course_emb.detach().cpu().numpy()
 
 
-def build_course_embeddings(grades_df, n_components=2, method="svd"):
+def build_course_embeddings(grades_df, n_components=2, method="neural"):
     """Return student and course embedding matrices.
 
-    method can be "svd" or "neural". Neural uses a simple PyTorch MF model
-    trained on observed grades.
+    method can be "neural" (default) or "svd" for backward compatibility.
+    Neural uses a simple PyTorch MF model trained on observed grades.
     """
     # prepare matrix with zeros for missing grades
     mat = grades_df.fillna(0).values
     if method == "svd":
+        # legacy support; requires scikit-learn
+        from sklearn.decomposition import TruncatedSVD
         svd = TruncatedSVD(n_components=n_components, random_state=42)
         student_emb = svd.fit_transform(mat)
         course_emb = svd.components_.T
@@ -78,13 +79,14 @@ def score_courses(student_id, grades_df, student_emb, course_emb):
     return dict(zip(grades_df.columns, sims))
 
 
-def build_prof_embeddings(feedback_df, n_components=2, method="svd"):
+def build_prof_embeddings(feedback_df, n_components=2, method="neural"):
     """Return student and professor embedding matrices.
 
-    method can be "svd" or "neural".
+    method can be "neural" (default) or "svd" for compatibility.
     """
     mat = feedback_df.fillna(0).values
     if method == "svd":
+        from sklearn.decomposition import TruncatedSVD
         svd = TruncatedSVD(n_components=n_components, random_state=42)
         student_emb = svd.fit_transform(mat)
         prof_emb = svd.components_.T
@@ -103,11 +105,20 @@ def score_professors(student_id, feedback_df, student_emb, prof_emb):
     return dict(zip(feedback_df.columns, sims))
 
 
-def merge_scores(course_scores, prof_scores, alpha=0.7, beta=0.3):
-    """Combine two score dictionaries into ranked list of (course,prof,score)."""
+def merge_scores(course_scores, prof_scores, alpha=0.7, beta=0.3, course_prof_map=None):
+    """Combine two score dictionaries into ranked list of (course,prof,score).
+
+    If `course_prof_map` is provided (a dict mapping professor -> list of courses),
+    only matching pairs are considered. This lets you model the fact that a
+    professor may teach only some courses.
+    """
     merged = []
     for c, cs in course_scores.items():
         for p, ps in prof_scores.items():
+            if course_prof_map is not None:
+                allowed = course_prof_map.get(p, [])
+                if c not in allowed:
+                    continue
             merged.append((c, p, alpha * cs + beta * ps))
     # sort descending
     return sorted(merged, key=lambda x: x[2], reverse=True)

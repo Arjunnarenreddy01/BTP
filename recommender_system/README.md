@@ -37,8 +37,10 @@ This small Python project illustrates how you can build a dual-layer recommendat
    The API listens on `http://localhost:8000` with endpoints:
    * `/student/{id}` – profile
    * `/courses/{id}` – course scores
-   * `/professors/{id}` – professor scores
-   * `/merge` – combine scores
+   * `/professors/{id}` – overall professor suitability scores for that student (not tied to a specific course)
+   * `/merge` – combine scores into ranked (course, professor) tuples; if you define
+     a mapping of which courses each professor teaches (see `data.prof_course_map`),
+     only valid pairs are returned.
 
 4. **Run the HTTP agent simulation**:
 
@@ -51,7 +53,7 @@ This small Python project illustrates how you can build a dual-layer recommendat
 ## Extending the Demo
 
 * Replace dummy data with a real database or CSVs
-* Swap out SVD for neural CF or embeddings (see `models.build_course_embeddings(method="neural")` or initialize `RecommendationAgent(method="neural")`). The requirement file now includes `torch` and training prints loss.
+* The system now uses **neural collaborative filtering by default**.  SVD remains only for backward compatibility – call `build_course_embeddings(method="svd")` or set `RecommendationAgent(method="svd")` if you really need it.  Install `torch` from requirements and watch the training losses when the agent starts.
 * Add text-based feedback using an LLM embedding API
 * Replace `demo_agent_http` with a true LLM agent (e.g. using OpenAI/Gemini via the ReAct pattern)
 * Add natural‑language constraints (`"light workload"`, etc.) to the agent prompt
